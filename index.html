@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMA Dashboard</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-bg-color: #f0f4f7;
+            --tg-secondary-bg-color: #ffffff;
+            --tg-text-color: #1a1c1e;
+            --tg-hint-color: #707579;
+            
+            --brand-blue: #3a8dff;
+            --brand-green: #4caf50;
+            --brand-red: #ff5252;
+            --brand-peach: #ff9f43;
+            
+            --card-blue: #c2e2ff;
+            --card-green: #d1f2d5;
+            --card-red: #ffdada;
+            --card-peach: #ffe8d1;
+            
+            --star-inactive: #d1d8dd;
+            --star-active: #ffc107;
+            --border-radius: 24px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-bg-color);
+            color: var(--tg-text-color);
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app-container {
+            padding: 16px;
+            padding-bottom: 110px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Profile & Logo Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: var(--tg-secondary-bg-color);
+            padding: 14px 18px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #eee;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .user-greeting {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-greeting h1 {
+            font-size: 17px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .user-meta {
+            font-size: 12px;
+            color: var(--tg-hint-color);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Vibrant Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            border-radius: 30px;
+            padding: 35px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 25px rgba(161, 196, 253, 0.4);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .balance-amount {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1a1a1a;
+            text-shadow: 0 2px 4px rgba(255,255,255,0.5);
+        }
+
+        .coin-decor {
+            position: absolute;
+            font-size: 44px;
+            opacity: 0.4;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+            animation: float 5s ease-in-out infinite;
+        }
+        .coin-1 { left: -5px; top: 15%; transform: rotate(-10deg); }
+        .coin-2 { right: -5px; bottom: 15%; transform: rotate(10deg); animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+            50% { transform: translateY(-12px) rotate(var(--r, 0deg)); }
+        }
+
+        /* Sections Container */
+        .card-group {
+            background: var(--tg-secondary-bg-color);
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .section-header {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Motivation Cards */
+        .mot-card {
+            background: #f1f3f5;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+            transition: 0.2s ease;
+        }
+
+        .mot-card.active {
+            background: #e7f5ff;
+            border-color: var(--brand-blue);
+        }
+
+        .mot-card-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .mot-card-sub {
+            font-size: 13px;
+            color: var(--tg-hint-color);
+        }
+
+        /* Bonus Box */
+        .bonus-box {
+            background: #e8f5e9;
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .bonus-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 800;
+            color: #2e7d32;
+        }
+
+        .stars-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .star-svg {
+            width: 100%;
+            fill: var(--star-inactive);
+        }
+
+        /* Vibrant Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            border-radius: 22px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .stat-card.blue { background-color: #d1e9ff; }
+        .stat-card.green { background-color: #d1f2d5; }
+        .stat-card.red { background-color: #ffdada; }
+        .stat-card.peach { background-color: #ffe8d1; }
+
+        .stat-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(0,0,0,0.6);
+            line-height: 1.2;
+        }
+
+        .stat-num {
+            font-size: 26px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        /* Nav Bar */
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 30px 0;
+            border-top: 1px solid #f0f0f0;
+            z-index: 1000;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .nav-tab.active { color: var(--brand-blue); }
+        .nav-tab svg { width: 24px; height: 24px; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header with Logo -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-box">
+                <img src="https://i.1.creatium.io/disk2/ef/3f/52/9d43cfbb35482741f0254fe11af6244eb2/248x248q8/izobrajenie_2026_02_06_183250593.png" alt="Marketing Biz">
+            </div>
+            <div class="user-greeting">
+                <h1 id="user-name">Привет, Алекс!</h1>
+                <div class="user-meta" id="user-handle">@boroda0201</div>
+            </div>
+        </div>
+        <span class="status-badge">Активен</span>
+    </header>
+
+    <!-- Balance Section -->
+    <section class="balance-card">
+        <div class="coin-decor coin-1" style="--r:-10deg">💰</div>
+        <div class="coin-decor coin-2" style="--r:10deg">🪙</div>
+        <div class="balance-label">Баланс кошелька</div>
+        <div class="balance-amount">0 ₽</div>
+    </section>
+
+    <!-- Motivation Section -->
+    <div class="card-group">
+        <div class="section-header">🎯 Моя цель</div>
+        <div class="mot-card active" onclick="selectMot(this)">
+            <div class="mot-card-title">Оклад 30 000 ₽ + бонусы</div>
+            <div class="mot-card-sub">Прогноз дохода: 50к — 60к ₽</div>
+        </div>
+        <div class="mot-card" onclick="selectMot(this)">
+            <div class="mot-card-title">Сдельная система</div>
+            <div class="mot-card-sub">Прогноз дохода: 80к — 150к ₽</div>
+        </div>
+    </div>
+
+    <!-- Bonus Section -->
+    <div class="card-group">
+        <div class="section-header">🎁 Бонус за 10 сотрудников</div>
+        <div class="bonus-box">
+            <div class="bonus-info">
+                <span>10 000 ₽ к окладу</span>
+                <span>0/10</span>
+            </div>
+            <div class="stars-row">
+                <script>
+                    for(let i=0; i<10; i++) {
+                        document.write('<svg class="star-svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+                    }
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="card-group">
+        <div class="section-header">📊 Моя статистика</div>
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon">👤</div>
+                <div class="stat-name">Рефералы за месяц</div>
+                <div class="stat-num">0</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon">📈</div>
+                <div class="stat-name">Эффективность</div>
+                <div class="stat-num">0%</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon">📅</div>
+                <div class="stat-name">Прошлый месяц</div>
+                <div class="stat-num">0</div>
+            </div>
+            <div class="stat-card peach">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-name">Место в топе</div>
+                <div class="stat-num">—</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="navigation">
+    <a href="#" class="nav-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>ОБУЧЕНИЕ</span>
+    </a>
+    <a href="#" class="nav-tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        <span>ГЛАВНАЯ</span>
+    </a>
+    <a href="#" class="nav-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>ПРОФИЛЬ</span>
+    </a>
+</nav>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.headerColor = '#ffffff';
+
+    function selectMot(el) {
+        document.querySelectorAll('.mot-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function init() {
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const u = tg.initDataUnsafe.user;
+            document.getElementById('user-name').innerText = `Привет, ${u.first_name}!`;
+            document.getElementById('user-handle').innerText = u.username ? `@${u.username}` : `ID: ${u.id}`;
+        }
+    }
+
+    init();
+</script>
+
+</body>
+</html>

@@ -44,7 +44,45 @@
             margin: 0 auto;
         }
 
-        /* Profile & Logo Header */
+        /* Top Brand Badge */
+        .brand-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #1a1a1a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .brand-logo {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Profile Header */
         .header {
             display: flex;
             align-items: center;
@@ -62,19 +100,22 @@
             gap: 12px;
         }
 
-        .logo-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #eef2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            background: #fff;
-            border: 1px solid #eee;
+            border: 2px solid var(--card-blue);
         }
 
-        .logo-box img {
+        .user-avatar img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
         }
 
         .user-greeting {
@@ -89,7 +130,7 @@
         }
 
         .user-meta {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--tg-hint-color);
             font-weight: 500;
         }
@@ -299,15 +340,26 @@
 <body>
 
 <div class="app-container">
-    <!-- Header with Logo -->
+    <!-- Brand Badge -->
+    <div class="brand-badge">
+        <div class="brand-logo">
+            <img src="https://i.1.creatium.io/disk2/ef/3f/52/9d43cfbb35482741f0254fe11af6244eb2/248x248q8/izobrajenie_2026_02_06_183250593.png" alt="Marketing Biz">
+        </div>
+        <span class="brand-text">Marketing Biz • Личный кабинет</span>
+    </div>
+
+    <!-- Header with User Avatar -->
     <header class="header">
         <div class="header-left">
-            <div class="logo-box">
-                <img src="https://i.1.creatium.io/disk2/ef/3f/52/9d43cfbb35482741f0254fe11af6244eb2/248x248q8/izobrajenie_2026_02_06_183250593.png" alt="Marketing Biz">
+            <div class="user-avatar" id="avatar-container">
+                <svg viewBox="0 0 24 24" fill="#bdc3c7" width="30"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             </div>
             <div class="user-greeting">
                 <h1 id="user-name">Привет, Алекс!</h1>
-                <div class="user-meta" id="user-handle">@boroda0201</div>
+                <div class="user-meta">
+                    <span id="user-handle">@boroda0201</span>
+                    <span id="user-id"> • ID: 32014518</span>
+                </div>
             </div>
         </div>
         <span class="status-badge">Активен</span>
@@ -317,13 +369,13 @@
     <section class="balance-card">
         <div class="coin-decor coin-1" style="--r:-10deg">💰</div>
         <div class="coin-decor coin-2" style="--r:10deg">🪙</div>
-        <div class="balance-label">Баланс кошелька</div>
-        <div class="balance-amount">0 ₽</div>
+        <div class="balance-label">Доступно к выводу</div>
+        <div class="balance-amount">15,000 ₽</div>
     </section>
 
     <!-- Motivation Section -->
     <div class="card-group">
-        <div class="section-header">🎯 Моя цель</div>
+        <div class="section-header">🎯 Текущая цель</div>
         <div class="mot-card active" onclick="selectMot(this)">
             <div class="mot-card-title">Оклад 30 000 ₽ + бонусы</div>
             <div class="mot-card-sub">Прогноз дохода: 50к — 60к ₽</div>
@@ -412,6 +464,11 @@
             const u = tg.initDataUnsafe.user;
             document.getElementById('user-name').innerText = `Привет, ${u.first_name}!`;
             document.getElementById('user-handle').innerText = u.username ? `@${u.username}` : `ID: ${u.id}`;
+            document.getElementById('user-id').innerText = ` • ID: ${u.id}`;
+            
+            if (u.photo_url) {
+                document.getElementById('avatar-container').innerHTML = `<img src="${u.photo_url}" alt="Avatar">`;
+            }
         }
     }
 

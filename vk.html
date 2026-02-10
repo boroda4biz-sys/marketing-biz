@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VK Mini App Dashboard</title>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <style>
+        /* Оставляем твои стили без изменений, 
+           только поменяем переменные цветов на более подходящие для ВК */
+        :root {
+            --vk-bg-color: #ebedf0;
+            --vk-card-bg: #ffffff;
+            --vk-text-primary: #000000;
+            --vk-accent-blue: #0077ff; /* Фирменный синий ВК */
+            
+            --brand-blue: #0077ff;
+            --brand-green: #4bb34b;
+            --brand-red: #ff3347;
+            --border-radius: 20px;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, "Helvetica Neue", Roboto, sans-serif;
+            background-color: var(--vk-bg-color);
+            color: var(--vk-text-primary);
+            margin: 0; padding: 0;
+        }
+
+        /* Далее используем твой CSS (для краткости пропущено, он полностью совместим) */
+        /* ... Твой CSS из предыдущего сообщения ... */
+        
+        .app-container { padding: 16px; padding-bottom: 110px; max-width: 500px; margin: 0 auto; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .brand-badge { display: flex; align-items: center; justify-content: center; gap: 10px; background: #1a1a1a; color: white; padding: 8px 16px; border-radius: 40px; margin-bottom: 16px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: var(--vk-card-bg); padding: 14px 18px; border-radius: var(--border-radius); gap: 12px; }
+        .user-avatar { width: 54px; height: 54px; border-radius: 50%; background: #eef2f5; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .balance-card { background: linear-gradient(135deg, #0077ff 0%, #00b2ff 100%); border-radius: 25px; padding: 30px 20px; text-align: center; margin-bottom: 20px; color: white; }
+        .navigation { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 12px 0 25px; border-top: 1px solid #ddd; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #818c99; cursor: pointer; }
+        .nav-tab.active { color: var(--vk-accent-blue); }
+        .nav-tab svg { width: 24px; height: 24px; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="brand-badge">
+        <span class="brand-text">Личный кабинет сотрудника ВК</span>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <div class="user-avatar" id="avatar-container">
+                <svg viewBox="0 0 24 24" fill="#bdc3c7" width="30"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div class="user-greeting">
+                <h1 id="user-name">Загрузка...</h1>
+                <div class="user-meta">
+                    <span id="user-id">ID: ...</span>
+                </div>
+            </div>
+        </div>
+        <span class="status-badge" style="color: red;">Не активен</span>
+    </header>
+
+    <main id="view-home" class="view active">
+        <section class="balance-card">
+            <div style="opacity: 0.8; font-size: 12px; letter-spacing: 1px;">БАЛАНС</div>
+            <div style="font-size: 36px; font-weight: 900;">10,000 ₽</div>
+        </section>
+        </main>
+</div>
+
+<nav class="navigation">
+    <div class="nav-tab active" onclick="switchView('view-home', this)">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>ГЛАВНАЯ</span>
+    </div>
+    <div class="nav-tab" onclick="showLockedAlert()">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>ПРОФИЛЬ</span>
+    </div>
+</nav>
+
+<script>
+    // 1. Инициализация VK Bridge
+    vkBridge.send("VKWebAppInit");
+
+    // 2. Функция получения данных пользователя
+    async function getUserData() {
+        try {
+            const user = await vkBridge.send("VKWebAppGetUserInfo");
+            document.getElementById('user-name').innerText = `Привет, ${user.first_name}!`;
+            document.getElementById('user-id').innerText = `ID: ${user.id}`;
+            
+            if (user.photo_200) {
+                document.getElementById('avatar-container').innerHTML = `<img src="${user.photo_200}" alt="Avatar">`;
+            }
+
+            // Пытаемся получить реферера из URL (хэш-параметры)
+            // Ссылка будет вида: vk.com/app12345#ref_id=555
+            const hash = window.location.hash;
+            if (hash.includes('ref_id')) {
+                const refId = hash.split('ref_id=')[1];
+                console.log("Вас пригласил пользователь с ID:", refId);
+                // Тут можно отправить fetch запрос на твой бэкенд (Python), чтобы сохранить рефку
+            }
+
+        } catch (error) {
+            console.error("Ошибка при получении данных:", error);
+            document.getElementById('user-name').innerText = "Ошибка доступа";
+        }
+    }
+
+    function switchView(viewId, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        el.classList.add('active');
+        
+        // Виброотклик (аналог haptic в TG)
+        vkBridge.send("VKWebAppTapticSelectionChanged");
+    }
+
+    function showLockedAlert() {
+        // Красивое нативное окно ВК вместо самодельного модала
+        vkBridge.send("VKWebAppShowNativeAds", {ad_format:"preloader"}); // Как пример вызова натива
+        alert("Доступ закрыт. Нужно пройти собеседование.");
+    }
+
+    // Запускаем получение данных
+    getUserData();
+</script>
+
+</body>
+</html>
